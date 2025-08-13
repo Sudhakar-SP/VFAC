@@ -3,19 +3,25 @@ import axios from 'axios';
 
 export default function MusicStudentList() {
   const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchStudents();
+    axios
+      .get('http://localhost:5000/api/music-students') // ✅ Corrected endpoint
+      .then((res) => {
+        setStudents(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error fetching students:', err);
+        setError('Failed to load music students.');
+        setLoading(false);
+      });
   }, []);
 
-  const fetchStudents = async () => {
-    try {
-      const res = await axios.get('http://localhost:5000/api/music/students');
-      setStudents(res.data);
-    } catch (err) {
-      console.error('Failed to fetch students:', err);
-    }
-  };
+  if (loading) return <p style={styles.message}>Loading music students...</p>;
+  if (error) return <p style={{ ...styles.message, color: 'red' }}>{error}</p>;
 
   return (
     <div style={styles.container}>
@@ -29,7 +35,6 @@ export default function MusicStudentList() {
               <th style={styles.th}>S.No</th>
               <th style={styles.th}>Roll Number</th>
               <th style={styles.th}>Name</th>
-              <th style={styles.th}>Course</th>
             </tr>
           </thead>
           <tbody>
@@ -38,7 +43,6 @@ export default function MusicStudentList() {
                 <td style={styles.td}>{index + 1}</td>
                 <td style={styles.td}>{student.rollNumber}</td>
                 <td style={styles.td}>{student.name}</td>
-                <td style={styles.td}>{student.course}</td>
               </tr>
             ))}
           </tbody>

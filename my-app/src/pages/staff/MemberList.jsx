@@ -12,6 +12,7 @@ export default function MemberList() {
   const fetchMembers = async () => {
     try {
       const res = await axios.get('http://localhost:5000/api/users/members');
+      console.log("Members data:", res.data); // Debug log
       setMembers(res.data);
     } catch (err) {
       console.error('Error fetching members:', err);
@@ -32,7 +33,6 @@ export default function MemberList() {
               <th style={styles.th}>S.No</th>
               <th style={styles.th}>Roll Number</th>
               <th style={styles.th}>Name</th>
-              <th style={styles.th}>Course</th>
             </tr>
           </thead>
           <tbody>
@@ -40,8 +40,7 @@ export default function MemberList() {
               <tr key={member._id}>
                 <td style={styles.td}>{index + 1}</td>
                 <td style={styles.td}>{member.rollNumber}</td>
-                <td style={styles.td}>{member.name}</td>
-                <td style={styles.td}>{member.course}</td>
+                <td style={styles.td}>{member.username || "N/A"}</td>
               </tr>
             ))}
           </tbody>

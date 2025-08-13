@@ -45,14 +45,21 @@ export const getStudents = async (req, res) => {
 
 // ✅ Get approved members only
 export const getMembers = async (req, res) => {
+  console.log('Fetching approved members...');
   try {
-    const members = await User.find({ role: 'student', isMember: true });
+    const members = await User.find(
+      { role: 'student', isMember: true },
+      'username rollNumber' // Select only these fields
+    );
     res.status(200).json(members);
   } catch (err) {
     console.error('Error fetching members:', err);
     res.status(500).json({ message: 'Failed to fetch members' });
   }
 };
+
+
+
 
 // ✅ List users by role (summary)
 export const listUsers = async (req, res) => {

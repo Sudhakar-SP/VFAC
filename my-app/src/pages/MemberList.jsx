@@ -1,4 +1,3 @@
-// src/pages/MemberList.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -10,12 +9,8 @@ export default function MemberList() {
   const fetchMembers = async () => {
     try {
       const res = await axios.get('http://localhost:5000/api/users/members');
-      if (Array.isArray(res.data)) {
-        setMembers(res.data);
-      } else {
-        console.error('Invalid response:', res.data);
-        setMembers([]);
-      }
+      console.log('Fetched members:', res.data);
+      setMembers(res.data || []);
     } catch (err) {
       console.error('Error fetching members:', err);
       setMembers([]);
@@ -26,8 +21,8 @@ export default function MemberList() {
 
   const handleRemove = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/api/users/remove/${id}`);
-      fetchMembers(); // refresh list after removal
+      await axios.put(`http://localhost:5000/api/users/remove/${id}`, { remove: true });
+      fetchMembers();
     } catch (err) {
       console.error('Error removing membership:', err);
     }
@@ -47,7 +42,6 @@ export default function MemberList() {
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Member List</h2>
 
-      {/* 🔍 Search Bar */}
       <input
         type="text"
         placeholder="Search by Roll Number"

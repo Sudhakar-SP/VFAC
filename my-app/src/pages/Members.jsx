@@ -2,33 +2,46 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 export default function Members() {
-  const [students, setStudents] = useState([]); // ✅ Should be array
-  const [searchTerm, setSearchTerm] = useState('');
+  const [students, setStudents] = useState([]);
   const [members, setMembers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Fetch all users
+  // Read token from localStorage
+  const token = localStorage.getItem('token');
+  console.log('Token:', token);
+
+  // Axios config with token for every request
+  const axiosConfig = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true, // needed if backend also sets cookies
+  };
+
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('/api/users/list');
-      setStudents(res.data.users || []); // ✅ Ensure it's an array
+      const res = await axios.get('/api/users/list', axiosConfig);
+      setStudents(res.data.students || []);
     } catch (error) {
       console.error('Error fetching users:', error);
+      setStudents([]);
     }
   };
 
-  // Fetch members only
   const fetchMembers = async () => {
     try {
-      const res = await axios.get('/api/users/members');
+      const res = await axios.get('/api/users/members', axiosConfig);
       setMembers(res.data.members || []);
     } catch (error) {
       console.error('Error fetching members:', error);
+      setMembers([]);
     }
   };
 
   const approveMember = async (id) => {
     try {
-      await axios.put(`/api/users/approve/${id}`);
+      await axios.put(`/api/users/approve/${id}`, {}, axiosConfig);
       fetchUsers();
       fetchMembers();
     } catch (error) {
@@ -38,7 +51,7 @@ export default function Members() {
 
   const removeMember = async (id) => {
     try {
-      await axios.put(`/api/users/approve/${id}`, { remove: true });
+      await axios.put(`/api/users/approve/${id}`, { remove: true }, axiosConfig);
       fetchUsers();
       fetchMembers();
     } catch (error) {
@@ -47,17 +60,27 @@ export default function Members() {
   };
 
   useEffect(() => {
-    fetchUsers();
-    fetchMembers();
-  }, []);
+    if (!token) {
+      console.error('No token found in localStorage');
+      setLoading(false);
+      return;
+    }
+    Promise.all([fetchUsers(), fetchMembers()]).finally(() => setLoading(false));
+  }, [token]);
 
-  // Filter only students and exclude already approved members
-  const filteredStudents = students?.filter(
+  const filteredStudents = students.filter(
     (user) =>
-      user.role === 'student' &&
       !members.some((m) => m._id === user._id) &&
       user.rollNumber?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (!token) {
+    return <p className="text-red-500 p-4">You must be logged in to view this page.</p>;
+  }
+
+  if (loading) {
+    return <p className="p-4 text-gray-500">Loading...</p>;
+  }
 
   return (
     <div className="p-4">
@@ -71,8 +94,9 @@ export default function Members() {
         className="mb-4 p-2 border rounded w-full md:w-1/2"
       />
 
+      {/* Pending Students */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredStudents?.map((student) => (
+        {filteredStudents.map((student) => (
           <div
             key={student._id}
             className="p-4 border rounded shadow flex justify-between items-center"
@@ -91,9 +115,10 @@ export default function Members() {
         ))}
       </div>
 
+      {/* Approved Members */}
       <h2 className="text-xl font-semibold mt-8 mb-4">Approved Members</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {members?.map((member) => (
+        {members.map((member) => (
           <div
             key={member._id}
             className="p-4 border rounded shadow flex justify-between items-center"

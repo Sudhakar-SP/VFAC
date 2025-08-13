@@ -18,6 +18,7 @@ const getTokenFromRequest = (req) => {
 // ✅ Middleware to check if user is authenticated
 export const requireAuth = async (req, res, next) => {
   const token = getTokenFromRequest(req);
+  console.log('token:', token);
 
   if (!token || typeof token !== 'string') {
     return res.status(401).json({ error: 'Unauthorized: No or malformed token provided' });

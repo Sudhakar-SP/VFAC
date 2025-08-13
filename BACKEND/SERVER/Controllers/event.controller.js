@@ -112,18 +112,21 @@ export const getAppliedStudents = async (req, res) => {
     console.log("🔍 Fetching event ID:", eventId);
 
     const event = await Event.findById(eventId)
-      .populate('applicants.user', 'username rollNumber isMember');
+      .populate('applicants.user', 'username rollNumber isMember')
+      .lean(); // Makes it plain JS object
 
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    res.json({ applicants: event.applicants });
+    res.json(event); // ✅ Send full event
   } catch (error) {
     console.error("❌ Error in getAppliedStudents:", error.message);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
 
 // Update Student Status
 export const updateStudentStatus = async (req, res) => {

@@ -35,10 +35,11 @@ import StudentProfile from './pages/student/StudentProfile';
 // Staff pages
 import InternalStaffDashboard from './pages/staff/InternalStaffDashboard';
 import InternalStaffEventList from './pages/staff/InternalStaffEventList';
-// import SelectedStudentsList from './components/internalstaff/SelectedStudentsList'; // ✅ NEWLY ADDED
+import SelectedStudentsList from './pages/staff/SelectedStudentsList';
 import InternalStaffMusicStudents from './pages/staff/MusicStudentList';
 import InternalStaffMembers from './pages/staff/MemberList';
 import ExternalStaffDashboard from './pages/staff/ExternalStaffDashboard';
+import ExternalStaffEventlist from './pages/staff/ExternalStaffEventList';
 
 // Layouts
 import PublicLayout from './Components/PublicLayout';
@@ -91,13 +92,14 @@ function App() {
           {/* Internal Staff */}
           <Route path="/internal-staff/dashboard" element={<InternalStaffDashboard />} />
           <Route path="/internal-staff/events" element={<InternalStaffEventList />} />
-          {/* <Route path="/internal-staff/events/selected/:eventId" element={<SelectedStudentsList />} /> */}
-{/* ✅ NEW ROUTE */}
+          <Route path="/internal-staff/events/selected/:eventId" element={<SelectedStudentsList />} />
           <Route path="/internal-staff/music-students" element={<InternalStaffMusicStudents />} />
           <Route path="/internal-staff/members" element={<InternalStaffMembers />} />
 
           {/* External Staff */}
           <Route path="/external-staff/dashboard" element={<ExternalStaffDashboard />} />
+          <Route path="/external-staff/events" element={<ExternalStaffEventlist />} />
+          <Route path="/external-staff/events/selected/:eventId" element={<SelectedStudentsList />} />
         </Route>
       </Routes>
     </BrowserRouter>

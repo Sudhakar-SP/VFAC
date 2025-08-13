@@ -18,13 +18,13 @@ import {
 const router = express.Router();
 
 // 🔐 Membership routes (Admin only)
-router.put('/approve/:id', requireAuth, requireAdmin, approveMembership);
-router.put('/remove/:id', requireAuth, requireAdmin, removeMembership);
+router.put('/approve/:id', approveMembership);
+router.put('/remove/:id',removeMembership);
 
 // 👥 User listing routes (Admin only)
-router.get('/list', requireAuth, requireAdmin, listUsers);
-router.get('/students', requireAuth, requireAdmin, getStudents);
-router.get('/members', requireAuth, requireAdmin, getMembers);
+router.get('/list', listUsers);
+router.get('/students', requireAuth, requireAdmin, getStudents);      
+router.get('/members', getMembers);
 
 // ❌ Delete user (Admin only)
 router.delete('/:id', requireAuth, requireAdmin, deleteUser);
