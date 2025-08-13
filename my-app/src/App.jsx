@@ -9,7 +9,7 @@ import Gallery from './pages/Gallery';
 import ForgotPassword from './pages/ForgotPassword';
 
 // Admin pages
-import Dashboard from './pages/AdminDashboard';
+import Dashboard from './pages/admindashboard';
 import Events from './pages/Events';
 import PostEvent from './pages/PostEvent';
 import AdminAppliedStudents from './pages/AdminAppliedStudents';
@@ -100,6 +100,8 @@ function App() {
           <Route path="/external-staff/dashboard" element={<ExternalStaffDashboard />} />
           <Route path="/external-staff/events" element={<ExternalStaffEventlist />} />
           <Route path="/external-staff/events/selected/:eventId" element={<SelectedStudentsList />} />
+          <Route path="/external-staff/music-class/attendance" element={<MarkAttendance />} />
+          <Route path="/external-staff/music-class/view-attendance" element={<ViewAttendance />} />
         </Route>
       </Routes>
     </BrowserRouter>

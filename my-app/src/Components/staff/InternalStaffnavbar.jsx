@@ -1,53 +1,60 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import {ReactTyped} from "react-typed";
 
 export default function InternalStaffNavbar() {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    // Clear tokens or any auth info from localStorage/sessionStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole'); // if you saved role or other info
-
-    // Optionally, call your backend logout API here if needed
-    // await axios.post('/api/logout');
-
-    // Redirect to login page
-    navigate('/login');
+    localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
+    navigate("/login");
   };
+
+  // Navigation links array
+  const navLinks = [
+    { path: "/internal-staff/events", label: "📅 Event List" },
+    { path: "/internal-staff/music-students", label: "🎼 Music Student List" },
+    { path: "/internal-staff/members", label: "👥 Member List" },
+  ];
 
   return (
     <>
       <nav className="navbar">
+        {/* Logo */}
         <div className="navbar-logo">
-          <Link to="/internal-staff/dashboard">👨‍🏫 VFAC.COM - STAFF</Link>
+          <Link to="/internal-staff/dashboard">
+            <ReactTyped
+              strings={["👨‍🏫 WELCOME TO VFAC.COM","👨‍🏫 STAFF PAGE"]}
+              typeSpeed={60}
+              backSpeed={40}
+              loop
+            />
+          </Link>
         </div>
-        <ul className="navbar-links">
-          <li><Link to="/internal-staff/events">📅 Event List</Link></li>
-          <li><Link to="/internal-staff/music-students">🎼 Music Student List</Link></li>
-          <li><Link to="/internal-staff/members">👥 Member List</Link></li>
-          {/* Replace the Logout link with a button or clickable element */}
+
+        {/* Hamburger Menu for Mobile */}
+        <div
+          className="menu-toggle"
+          onClick={() => setMenuOpen((prev) => !prev)}
+        >
+          ☰
+        </div>
+
+        {/* Nav Links */}
+        <ul className={`navbar-links ${menuOpen ? "active" : ""}`}>
+          {navLinks.map((link, index) => (
+            <li key={index}>
+              <Link to={link.path} onClick={() => setMenuOpen(false)}>
+                {link.label}
+              </Link>
+            </li>
+          ))}
           <li>
             <button
               onClick={handleLogout}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'white',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                padding: '8px 14px',
-                borderRadius: '6px',
-                transition: 'background 0.3s, color 0.3s',
-              }}
-              onMouseOver={e => {
-                e.currentTarget.style.background = '#ffffff22';
-                e.currentTarget.style.color = '#ffd700';
-              }}
-              onMouseOut={e => {
-                e.currentTarget.style.background = 'none';
-                e.currentTarget.style.color = 'white';
-              }}
+              className="logout-btn"
             >
               🚪 Logout
             </button>
@@ -55,7 +62,7 @@ export default function InternalStaffNavbar() {
         </ul>
       </nav>
 
-      {/* Keep your styles here */}
+      {/* Styles */}
       <style>{`
         .navbar {
           display: flex;
@@ -63,7 +70,7 @@ export default function InternalStaffNavbar() {
           align-items: center;
           background: linear-gradient(90deg, #4b6cb7, #182848);
           padding: 15px 30px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
           position: sticky;
           top: 0;
           z-index: 1000;
@@ -74,11 +81,14 @@ export default function InternalStaffNavbar() {
           font-size: 24px;
           font-weight: bold;
           text-decoration: none;
-          transition: color 0.3s;
+          white-space: nowrap;
         }
 
-        .navbar-logo a:hover {
-          color: #ffd700;
+        .menu-toggle {
+          display: none;
+          font-size: 28px;
+          color: white;
+          cursor: pointer;
         }
 
         .navbar-links {
@@ -93,7 +103,7 @@ export default function InternalStaffNavbar() {
           display: inline;
         }
 
-        .navbar-links a {
+        .navbar-links a, .logout-btn {
           color: #fff;
           font-size: 16px;
           font-weight: 500;
@@ -101,31 +111,43 @@ export default function InternalStaffNavbar() {
           padding: 8px 14px;
           border-radius: 6px;
           transition: background 0.3s, color 0.3s;
+          background: none;
+          border: none;
+          cursor: pointer;
         }
 
-        .navbar-links a:hover {
+        .navbar-links a:hover, .logout-btn:hover {
           background: #ffffff22;
           color: #ffd700;
         }
 
+        /* Mobile Styles */
         @media (max-width: 768px) {
-          .navbar {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 20px;
+          .menu-toggle {
+            display: block;
           }
 
           .navbar-links {
+            position: absolute;
+            top: 60px;
+            right: 0;
             flex-direction: column;
-            width: 100%;
-            gap: 10px;
-            margin-top: 15px;
+            background: linear-gradient(90deg, #4b6cb7, #182848);
+            width: 220px;
+            height: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            padding: 15px;
+            border-radius: 0 0 0 12px;
           }
 
-          .navbar-links a, .navbar-links button {
+          .navbar-links.active {
+            transform: translateX(0);
+          }
+
+          .navbar-links li {
             display: block;
-            width: 100%;
-            text-align: left;
+            margin-bottom: 10px;
           }
         }
       `}</style>

@@ -1,43 +1,108 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaBars, FaTimes, FaChevronDown } from 'react-icons/fa';
+import {ReactTyped} from 'react-typed';
 
 export default function ExternalStaffNavbar() {
   const [musicDropdownOpen, setMusicDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    navigate('/login');
+  };
 
   return (
     <>
       <nav className="navbar">
+        {/* Logo with typing effect */}
         <div className="navbar-logo">
-          <Link to="/external-staff/dashboard"> VFAC.COM - EXTERNAL-STAFF</Link>
+          <Link to="/external-staff/dashboard">
+            <ReactTyped
+              strings={[
+                'WELCOME TO VFAC.COM',
+                'STAFF PAGE',
+                'VFAC.COM',
+              ]}
+              typeSpeed={60}
+              backSpeed={40}
+              loop
+            />
+          </Link>
         </div>
-        <ul className="navbar-links">
+
+        {/* Hamburger Menu Icon (Mobile) */}
+        <div
+          className="mobile-menu-icon"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <FaTimes size={26} /> : <FaBars size={26} />}
+        </div>
+
+        {/* Navbar Links */}
+        <ul className={`navbar-links ${mobileMenuOpen ? 'active' : ''}`}>
           <li>
-            <Link to="/external-staff/events">📅 Event List</Link>
+            <Link
+              to="/external-staff/events"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              📅 Event List
+            </Link>
           </li>
 
+          {/* Music Class Dropdown */}
           <li
             className="dropdown"
-            onMouseEnter={() => setMusicDropdownOpen(true)}
-            onMouseLeave={() => setMusicDropdownOpen(false)}
+            onMouseEnter={() =>
+              window.innerWidth > 768 && setMusicDropdownOpen(true)
+            }
+            onMouseLeave={() =>
+              window.innerWidth > 768 && setMusicDropdownOpen(false)
+            }
+            onClick={() =>
+              window.innerWidth <= 768 &&
+              setMusicDropdownOpen(!musicDropdownOpen)
+            }
           >
             <span className="dropdown-toggle">
-              🎼 Music Class ▾
+              🎼 Music Class <FaChevronDown className="dropdown-arrow" />
             </span>
             {musicDropdownOpen && (
               <ul className="dropdown-menu">
-                <li><Link to="/external-staff/music-class/attendance">📝 Attendance</Link></li>
-                <li><Link to="/external-staff/music-class/view-attendance">👁️ View Attendance</Link></li>
+                <li>
+                  <Link
+                    to="/external-staff/music-class/attendance"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    📝 Attendance
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/external-staff/music-class/view-attendance"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    👁️ View Attendance
+                  </Link>
+                </li>
               </ul>
             )}
           </li>
 
+          {/* Logout */}
           <li>
-            <Link to="/logout" className="logout-link">🚪 Logout</Link>
+            <Link to="#" className="logout-link" onClick={handleLogout}>
+              🚪 Logout
+            </Link>
           </li>
         </ul>
       </nav>
 
       <style>{`
+        /* ===== NAVBAR BASE ===== */
         .navbar {
           display: flex;
           justify-content: space-between;
@@ -51,32 +116,31 @@ export default function ExternalStaffNavbar() {
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        /* ===== LOGO ===== */
         .navbar-logo a {
           color: #fff;
-          font-size: 28px;
+          font-size: 22px;
           font-weight: 700;
           text-decoration: none;
           transition: color 0.3s ease;
+          white-space: nowrap;
         }
-
         .navbar-logo a:hover {
           color: #ffdd57;
         }
 
+        /* ===== LINKS ===== */
         .navbar-links {
           list-style: none;
           display: flex;
-          gap: 30px;
+          gap: 25px;
           margin: 0;
           padding: 0;
           align-items: center;
         }
-
         .navbar-links li {
           position: relative;
-          font-weight: 600;
         }
-
         .navbar-links a, .dropdown-toggle {
           color: #fff;
           font-size: 16px;
@@ -85,17 +149,16 @@ export default function ExternalStaffNavbar() {
           padding: 10px 15px;
           border-radius: 8px;
           transition: background-color 0.3s, color 0.3s;
-          user-select: none;
-          display: inline-block;
+          display: flex;
+          align-items: center;
+          gap: 6px;
         }
-
-        .navbar-links a:hover,
-        .dropdown-toggle:hover {
+        .navbar-links a:hover, .dropdown-toggle:hover {
           background-color: rgba(255, 221, 87, 0.2);
           color: #ffdd57;
         }
 
-        /* Dropdown menu styles */
+        /* ===== DROPDOWN MENU ===== */
         .dropdown-menu {
           position: absolute;
           top: 45px;
@@ -107,82 +170,69 @@ export default function ExternalStaffNavbar() {
           padding: 10px 0;
           min-width: 180px;
           z-index: 1001;
-          user-select: none;
         }
-
-        .dropdown-menu li {
-          padding: 0;
-        }
-
         .dropdown-menu li a {
-          display: block;
           padding: 10px 20px;
           color: #fff;
           font-weight: 500;
-          font-size: 15px;
+          display: block;
           border-radius: 6px;
-          transition: background-color 0.3s, color 0.3s;
         }
-
         .dropdown-menu li a:hover {
           background-color: #7a4dff;
-          color: #fff;
+        }
+        .dropdown-arrow {
+          transition: transform 0.3s;
         }
 
-        /* Logout link special styling */
+        /* ===== LOGOUT ===== */
         .logout-link {
           font-weight: 700;
           background: #e63946;
-          padding: 10px 18px;
+          padding: 8px 16px;
           border-radius: 10px;
           transition: background-color 0.3s;
         }
-
         .logout-link:hover {
           background: #a52835;
           color: #fff;
         }
 
-        /* Responsive */
+        /* ===== MOBILE ===== */
+        .mobile-menu-icon {
+          display: none;
+          color: white;
+          cursor: pointer;
+        }
+
         @media (max-width: 768px) {
-          .navbar {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 20px;
-          }
-
-          .navbar-links {
-            flex-direction: column;
-            width: 100%;
-            gap: 15px;
-            margin-top: 15px;
-          }
-
-          .navbar-links a, .dropdown-toggle {
+          .mobile-menu-icon {
             display: block;
-            width: 100%;
-            padding-left: 0;
           }
-
-          .dropdown-menu {
-            position: relative;
-            top: 0;
+          .navbar-links {
+            position: absolute;
+            top: 70px;
+            left: -100%;
+            flex-direction: column;
+            background: #4a00e0;
+            width: 100%;
+            padding: 20px 0;
+            transition: left 0.3s ease;
+            gap: 15px;
+          }
+          .navbar-links.active {
             left: 0;
+          }
+          .dropdown-menu {
+            position: static;
             box-shadow: none;
             background: transparent;
             padding: 0;
-            min-width: auto;
           }
-
           .dropdown-menu li a {
             padding-left: 20px;
-            background: transparent !important;
-            color: #ddd !important;
-          }
-
-          .dropdown-menu li a:hover {
-            background: transparent !important;
-            color: #ffdd57 !important;
+            background: transparent;
+            color: #fff;
           }
         }
       `}</style>

@@ -1,19 +1,32 @@
-// controllers/musicAttendance.controller.js
-
 import Attendance from '../Models/Attendance.js';
 import MusicStudent from '../Models/MusicStudent.js';
+
+// Helper: Validate attendance array format
+const validateAttendanceArray = (attendance) => {
+  if (!Array.isArray(attendance)) return false;
+  for (const entry of attendance) {
+    if (
+      !entry.student || // changed from studentId to student to match your DB schema
+      typeof entry.rollNumber !== 'string' ||
+      !['present', 'absent'].includes(entry.status)
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
 
 // ✅ MARK ATTENDANCE
 export const markAttendance = async (req, res) => {
   try {
     const { date, attendance } = req.body;
 
-    if (!date || !Array.isArray(attendance)) {
+    if (!date || !validateAttendanceArray(attendance)) {
       return res.status(400).json({ message: 'Invalid attendance data format' });
     }
 
     const formattedAttendance = attendance.map(record => ({
-      student: record.studentId,
+      student: record.student,
       rollNumber: record.rollNumber,
       status: record.status || 'absent'
     }));
@@ -31,16 +44,55 @@ export const markAttendance = async (req, res) => {
       }
     ).populate('attendance.student', 'rollNumber name');
 
-    console.log('Attendance marked successfully:', result);
-
     res.status(200).json({
       message: 'Attendance marked successfully',
       data: result
     });
   } catch (error) {
-    console.error('Error marking attendance:', error);
     res.status(500).json({
       message: 'Failed to mark attendance',
+      error: error.message
+    });
+  }
+};
+
+// ✅ UPDATE ATTENDANCE
+export const updateAttendance = async (req, res) => {
+  try {
+    const { date, attendance } = req.body;
+
+    if (!date || !validateAttendanceArray(attendance)) {
+      return res.status(400).json({ message: 'Invalid attendance data format' });
+    }
+
+    const existingRecord = await Attendance.findOne({ date: new Date(date) });
+    if (!existingRecord) {
+      return res.status(404).json({ message: 'Attendance record not found for this date' });
+    }
+
+    // Update statuses only for matching rollNumbers
+    const updatedAttendance = existingRecord.attendance.map(existingEntry => {
+      const updatedEntry = attendance.find(a => a.rollNumber === existingEntry.rollNumber);
+      if (
+          !entry.student || // student is required (must be truthy)
+          typeof entry.rollNumber !== 'string' || // rollNumber must be string
+          !['present', 'absent'].includes(entry.status)
+        ) {
+          return false;
+        }
+      return existingEntry;
+    });
+
+    existingRecord.attendance = updatedAttendance;
+    const savedRecord = await existingRecord.save();
+
+    res.status(200).json({
+      message: 'Attendance updated successfully',
+      data: savedRecord
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Failed to update attendance',
       error: error.message
     });
   }
@@ -55,7 +107,6 @@ export const getAttendanceByDate = async (req, res) => {
       return res.status(400).json({ message: 'Date is required' });
     }
 
-    // Normalize the date to ISO format midnight
     const selectedDate = new Date(date);
     selectedDate.setUTCHours(0, 0, 0, 0);
 
@@ -65,8 +116,6 @@ export const getAttendanceByDate = async (req, res) => {
     const attendanceRecord = await Attendance.findOne({
       date: { $gte: selectedDate, $lt: nextDay }
     });
-
-    console.log('Raw attendance record:', attendanceRecord);
 
     if (!attendanceRecord) {
       return res.status(200).json({ message: 'No attendance record found', attendance: [] });
@@ -83,7 +132,6 @@ export const getAttendanceByDate = async (req, res) => {
       };
     });
 
-    // Combine attendance with student details
     const detailedAttendance = attendanceRecord.attendance.map(entry => {
       const student = studentMap[entry.rollNumber];
       return {
@@ -97,7 +145,6 @@ export const getAttendanceByDate = async (req, res) => {
 
     res.status(200).json({ attendance: detailedAttendance });
   } catch (error) {
-    console.error('❌ Error in getAttendanceByDate:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -106,9 +153,7 @@ export const getAttendanceByDate = async (req, res) => {
 export const getAttendanceByStudent = async (req, res) => {
   try {
     const { rollNumber } = req.params;
-
     const records = await Attendance.find({ 'attendance.rollNumber': rollNumber }).lean();
-
     res.status(200).json(records);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching attendance', error: error.message });
@@ -129,14 +174,10 @@ export const getAllAttendance = async (req, res) => {
       query.date = { $gte: searchDate, $lt: nextDay };
     }
 
-    console.log('Fetching attendance with query:', JSON.stringify(query));
-
     const records = await Attendance.find(query)
       .sort({ date: -1 })
       .populate('attendance.student', 'rollNumber name')
       .lean();
-
-    console.log('Raw records found:', records.length);
 
     const validRecords = records
       .filter(record => record && record.date)
@@ -156,14 +197,8 @@ export const getAllAttendance = async (req, res) => {
         };
       });
 
-    console.log('Valid records after transformation:', validRecords.length);
-    if (validRecords.length > 0) {
-      console.log('Sample valid record:', JSON.stringify(validRecords[0], null, 2));
-    }
-
     return res.status(200).json(validRecords);
   } catch (error) {
-    console.error('Error in getAllAttendance:', error);
     return res.status(500).json({
       message: 'Error fetching attendance records',
       error: error.message
@@ -194,7 +229,6 @@ export const getAttendanceByDateRange = async (req, res) => {
 
     res.json(records);
   } catch (error) {
-    console.error('Error in getAttendanceByDateRange:', error);
     res.status(500).json({ message: 'Error fetching attendance records', error: error.message });
   }
 };
@@ -203,8 +237,6 @@ export const getAttendanceByDateRange = async (req, res) => {
 export const getAttendancePercentage = async (req, res) => {
   try {
     const { rollNumber, date } = req.query;
-
-    console.log('Calculating percentage for:', { rollNumber, date });
 
     if (!rollNumber || !date) {
       return res.status(400).json({ message: 'Roll number and date are required' });
@@ -229,8 +261,6 @@ export const getAttendancePercentage = async (req, res) => {
 
     const percentage = totalDays ? (presentDays / totalDays) * 100 : 0;
 
-    console.log('Attendance calculation:', { totalDays, presentDays, percentage });
-
     res.json({
       percentage: percentage.toFixed(2),
       totalDays,
@@ -238,7 +268,6 @@ export const getAttendancePercentage = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error calculating percentage:', error);
     res.status(500).json({ message: 'Error calculating attendance percentage', error: error.message });
   }
 };

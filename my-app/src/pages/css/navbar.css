@@ -1,6 +1,7 @@
-/* src/pages/css/navbar.css */
+--- Modern Navbar Styling ---
 .navbar {
-  background-color: #3e3e9e; /* dark blue */
+  background: rgba(62, 62, 158, 0.85);
+  backdrop-filter: blur(8px);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -8,66 +9,107 @@
   position: fixed;
   width: 100%;
   top: 0;
-  z-index: 50;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
 }
 
+/* Logo with Icon */
 .navbar .logo {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: bold;
-  color: #ffffff;
+  color: #352e2e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+.navbar .logo i {
+  font-size: 1.4rem;
+  color: #ffdf00;
+}
+
+/* Main Links */
 .navbar .links {
   display: flex;
   gap: 1.5rem;
   align-items: center;
 }
 
-.navbar .links button,
 .navbar .links a,
+.navbar .links button,
 .dropdown-toggle {
   background: none;
   border: none;
-  color: #ffffff;
+  color: #f79494;
   text-decoration: none;
   font-size: 1rem;
   cursor: pointer;
-  padding: 5px 8px;
-  transition: color 0.3s, border-bottom 0.3s;
-  border-bottom: 2px solid transparent;
+  padding: 6px 8px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.3s;
+}
+
+/* Underline animation */
+.navbar .links a::after,
+.dropdown-toggle::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #ffdf00;
+  transition: width 0.3s ease-in-out;
+}
+
+.navbar .links a:hover::after,
+.dropdown-toggle:hover::after {
+  width: 100%;
 }
 
 .navbar .links button:hover,
 .navbar .links a:hover,
 .dropdown-toggle:hover {
-  color: #ffdf00; /* golden yellow */
-  border-bottom: 2px solid #ffdf00;
+  color: #ffdf00;
+  text-underline-offset: 4px;
 }
 
-/* Dropdown */
+/* Dropdown Styling */
 .dropdown-container {
   position: relative;
+  
 }
 
+/* Fix login dropdown overflow */
 .dropdown-menu {
   position: absolute;
   top: 120%;
-  right: 0;
-  background-color: white;
-  border-radius: 6px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  min-width: 180px;
-  z-index: 1000;
-  color: #1f2937;
-  animation: fadeIn 0.2s ease-in-out;
+  right: 0;             /* anchor to the right edge of the button */
+  left: auto;           /* prevent left positioning conflicts */
+  transform: translateX(-10px); /* small left shift for padding */
+  max-width: 90vw;      /* never exceed viewport width */
+  overflow-wrap: break-word;
+}
+
+
+.dropdown-menu {
+  max-width: 90vw;
+  overflow-wrap: break-word;
 }
 
 .dropdown-menu div {
-  padding: 10px 15px;
+  padding: 12px 16px;
   cursor: pointer;
   font-size: 0.95rem;
   border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .dropdown-group {
@@ -81,10 +123,138 @@
 }
 
 .dropdown-menu div:hover {
-  background-color: #f3f4f6;
+  background-color: #ffdf00;
+  color: #1f2937;
 }
 
+/* Animation */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Responsive Menu Button --- */
+.hamburger {
+  display: none;
+  font-size: 1.8rem;
+  color: white;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+/* --- Logged-in Drawer for Right Side Links --- */
+.user-drawer {
+  position: fixed;
+  top: 0;
+  right: -260px; /* Off screen by default */
+  width: 260px;
+  height: 100%;
+  background: rgba(62, 62, 158, 0.97);
+  backdrop-filter: blur(10px);
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.25);
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: right 0.3s ease;
+  z-index: 200;
+}
+
+.user-drawer.active {
+  right: 0; /* Slide in */
+}
+
+.user-drawer a {
+  color: white;
+  font-size: 1.1rem;
+  text-decoration: none;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  transition: color 0.3s;
+}
+
+.user-drawer a:hover {
+  color: #ffdf00;
+}
+
+/* --- Tablet & Mobile --- */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.8rem 1rem;
+  }
+
+  .navbar .links {
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+    background: rgba(62, 62, 158, 0.95);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    padding: 1rem 0;
+  }
+
+  .navbar.active .links {
+    display: flex;
+  }
+
+  .hamburger {
+    display: block;
+  }
+}
+
+/* --- Mobile Instagram-style Bottom Navbar --- */
+@media (max-width: 480px) {
+  .navbar {
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    justify-content: space-around;
+    padding: 0.5rem 0;
+  }
+
+  /* Keep logo visible but small */
+  .navbar .logo {
+    font-size: 1rem;
+    gap: 4px;
+  }
+
+  .hamburger {
+    display: none;
+  }
+
+  .navbar .links {
+    display: flex !important;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    background: transparent;
+    position: static;
+    gap: 0;
+  }
+
+  .navbar .links a {
+    flex: 1;
+    justify-content: center;
+    padding: 0.5rem 0;
+    font-size: 1.4rem;
+  }
+  .navbar .links a i {
+    font-size: 1.6rem;
+  }
+  .navbar .links a:hover {
+    color: #ffdf00;
+  }
+}
+
+/* --- Extra small devices (≤ 320px) --- */
+@media (max-width: 320px) {
+  .navbar .logo {
+    font-size: 0.85rem;
+  }
+  .navbar .links a {
+    font-size: 1.2rem;
+  }
 }

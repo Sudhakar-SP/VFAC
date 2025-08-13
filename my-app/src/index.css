@@ -2,33 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-
-/* index.css */
-.login-container {
-  background: linear-gradient(to right, #e0eafc, #cfdef3);
-}
+/* ====== Global Styles ====== */
 html {
   scroll-behavior: smooth;
 }
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background-color: #ffffff;
+}
+
+/* ====== Sections ====== */
 section {
-  scroll-margin-top: 80px; /* Adjust based on your navbar height */
+  scroll-margin-top: 80px; /* Adjust based on navbar height */
+  padding: 80px 20px;
 }
-#about, #gallery, #contact {
-  scroll-margin-top: 80px;
-}
+
 #home {
   height: 500px;
   background-color: #f0f0f0;
   position: relative;
 }
 
-#about, #gallery, #contact {
-  padding: 80px 20px;
-  background-color: white;
-}
 #about {
   background-color: #f9f9f9;
 }
+
 #gallery {
   background-color: #f0f0f0;
+}
+
+#contact {
+  background-color: white;
+}
+
+/* ====== Login Page ====== */
+.login-container {
+  background: linear-gradient(to right, #e0eafc, #cfdef3);
+  max-width: 400px;
+  margin: 120px auto;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ====== Responsive Adjustments ====== */
+
+/* Tablet & smaller */
+@media (max-width: 1024px) {
+  section {
+    padding: 60px 15px;
+  }
+
+  #home {
+    height: auto;
+    min-height: 400px;
+  }
+
+  .login-container {
+    margin: 60px auto;
+    padding: 20px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  section {
+    padding: 40px 10px;
+  }
+
+  #home {
+    min-height: 300px;
+  }
+
+  .login-container {
+    margin: 40px 15px;
+    padding: 15px;
+  }
+}
+
+/* Extra small mobile */
+@media (max-width: 480px) {
+  section {
+    padding: 30px 8px;
+  }
+
+  .login-container {
+    width: 100%;
+    margin: 30px 10px;
+    padding: 12px;
+  }
 }

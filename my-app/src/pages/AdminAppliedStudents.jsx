@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaClock,
+  FaUserGraduate,
+  FaCalendarAlt,
+  FaUserCheck,
+} from 'react-icons/fa';
 
 export default function AdminAppliedStudents() {
   const [students, setStudents] = useState([]);
@@ -15,6 +23,7 @@ export default function AdminAppliedStudents() {
       .then((res) => {
         const applicants = res.data.applicants || [];
 
+        // Sort so members appear first
         const sorted = [...applicants].sort((a, b) => {
           const aMember = a.user?.isMember ? 1 : 0;
           const bMember = b.user?.isMember ? 1 : 0;
@@ -22,9 +31,10 @@ export default function AdminAppliedStudents() {
         });
 
         setStudents(sorted);
+        setError('');
       })
       .catch((err) => {
-        console.error(err);
+        console.error('Error fetching applied students:', err);
         setError('Failed to fetch applied students');
       });
   }, [eventId]);
@@ -35,8 +45,6 @@ export default function AdminAppliedStudents() {
         `http://localhost:5000/api/events/update-status/${eventId}/${studentId}`,
         { status: newStatus }
       );
-
-      // Optionally, update user.isMember in DB (done from backend ideally)
 
       setStudents((prev) => {
         const updated = prev.map((student) => {
@@ -54,14 +62,17 @@ export default function AdminAppliedStudents() {
           return student;
         });
 
+        // Sort again after status change
         return [...updated].sort((a, b) => {
           const aMember = a.user?.isMember ? 1 : 0;
           const bMember = b.user?.isMember ? 1 : 0;
           return bMember - aMember;
         });
       });
+      setError('');
     } catch (err) {
       console.error('Error updating status:', err);
+      setError('Failed to update student status.');
       alert('Failed to update student status.');
     }
   };
@@ -69,99 +80,119 @@ export default function AdminAppliedStudents() {
   const acceptedStudents = students.filter((s) => s.status === 'Accepted');
 
   return (
-    <div style={{ padding: '30px', fontFamily: 'Arial, sans-serif' }}>
-      <h2>📋 Applied Students</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="max-w-7xl mx-auto p-8 bg-white rounded-xl shadow-lg font-sans">
+      <h2 className="text-4xl font-extrabold mb-8 text-center text-gray-900 tracking-wide select-none relative">
+        <span className="relative z-10 px-8 py-3 bg-yellow-400 bg-opacity-90 rounded-lg shadow-md inline-block">
+          📋 Applied Students
+        </span>
+        <span className="absolute left-1/2 top-16 w-48 h-1 bg-yellow-400 rounded transform -translate-x-1/2 shadow-lg"></span>
+      </h2>
 
-      <div style={{ marginBottom: '20px', fontWeight: 'bold' }}>
-        ✅ Accepted Students: {acceptedStudents.length}
+      {error && (
+        <p className="mb-6 text-center text-red-600 font-semibold">{error}</p>
+      )}
+
+      <div className="mb-8 text-xl font-semibold text-green-700 flex items-center justify-center space-x-3">
+        <FaUserCheck className="text-2xl" />
+        <span>Accepted Students: {acceptedStudents.length}</span>
       </div>
 
       {students.length === 0 ? (
-        <p>No students have applied for this event yet.</p>
+        <p className="text-center text-gray-500 text-lg mt-16">
+          No students have applied for this event yet.
+        </p>
       ) : (
-        <table style={tableStyle}>
-          <thead style={theadStyle}>
-            <tr>
-              <th style={thStyle}>S.No</th>
-              <th style={thStyle}>Roll No</th>
-              <th style={thStyle}>Name</th>
-              <th style={thStyle}>Status</th>
-              <th style={thStyle}>Applied At</th>
-              <th style={thStyle}>Member</th>
-              <th style={thStyle}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((student, index) => {
-              const user = student.user;
-              if (!user) return null;
-
-              return (
-                <tr key={student._id} style={index % 2 === 0 ? rowStyleEven : rowStyleOdd}>
-                  <td style={tdStyle}>{index + 1}</td>
-                  <td style={tdStyle}>{user.rollNumber || 'N/A'}</td>
-                  <td style={tdStyle}>{user.username || user.name || 'N/A'}</td>
-                  <td style={tdStyle}>
-                    <strong style={{ color: statusColor(student.status) }}>
-                      {student.status || 'Pending'}
-                    </strong>
-                  </td>
-                  <td style={tdStyle}>
-                    {student.appliedAt
-                      ? new Date(student.appliedAt).toLocaleString()
-                      : 'N/A'}
-                  </td>
-                  <td style={tdStyle}>{user.isMember ? 'Yes' : 'No'}</td>
-                  <td style={tdStyle}>
-                    <button
-                      style={{ ...btnStyle, backgroundColor: 'green' }}
-                      onClick={() => handleStatusChange(user._id, 'Accepted')}
-                      disabled={student.status === 'Accepted'}
-                    >
-                      Accept
-                    </button>
-                    <button
-                      style={{ ...btnStyle, backgroundColor: 'red' }}
-                      onClick={() => handleStatusChange(user._id, 'Rejected')}
-                      disabled={student.status === 'Rejected'}
-                    >
-                      Reject
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
-
-      {acceptedStudents.length > 0 && (
-        <div style={{ marginTop: '40px' }}>
-          <h3>🎉 Selected (Accepted) Students List</h3>
-          <table style={tableStyle}>
-            <thead style={{ backgroundColor: '#4CAF50', color: 'white' }}>
+        <div className="overflow-x-auto rounded-lg shadow-md">
+          <table className="min-w-full divide-y divide-gray-200 text-left">
+            <thead className="bg-gray-900 text-white">
               <tr>
-                <th style={thStyle}>S.No</th>
-                <th style={thStyle}>Roll No</th>
-                <th style={thStyle}>Name</th>
-                <th style={thStyle}>Applied At</th>
+                <th className="px-4 py-3 text-xs sm:text-sm font-medium text-left">
+                  S.No
+                </th>
+                <th className="px-4 py-3 text-xs sm:text-sm font-medium text-left">
+                  <span className="inline-flex items-center space-x-1">
+                    <FaUserGraduate /> <span>Roll No</span>
+                  </span>
+                </th>
+                <th className="px-4 py-3 text-xs sm:text-sm font-medium text-left">Name</th>
+                <th className="px-4 py-3 text-xs sm:text-sm font-medium text-left">
+                  <span className="inline-flex items-center space-x-1">
+                    <FaClock /> <span>Status</span>
+                  </span>
+                </th>
+                <th className="px-4 py-3 text-xs sm:text-sm font-medium text-left">
+                  <span className="inline-flex items-center space-x-1">
+                    <FaCalendarAlt /> <span>Applied At</span>
+                  </span>
+                </th>
+                <th className="px-4 py-3 text-xs sm:text-sm font-medium text-left">
+                  <span className="inline-flex items-center space-x-1">
+                    <FaUserCheck /> <span>Member</span>
+                  </span>
+                </th>
+                <th className="px-4 py-3 text-xs sm:text-sm font-medium text-left">Action</th>
               </tr>
             </thead>
-            <tbody>
-              {acceptedStudents.map((student, index) => {
+
+            <tbody className="bg-white divide-y divide-gray-200">
+              {students.map((student, index) => {
                 const user = student.user;
                 if (!user) return null;
 
                 return (
-                  <tr key={student._id} style={index % 2 === 0 ? rowStyleEven : rowStyleOdd}>
-                    <td style={tdStyle}>{index + 1}</td>
-                    <td style={tdStyle}>{user.rollNumber || 'N/A'}</td>
-                    <td style={tdStyle}>{user.username || user.name || 'N/A'}</td>
-                    <td style={tdStyle}>
+                  <tr
+                    key={student._id}
+                    className={index % 2 === 0 ? 'bg-gray-50' : ''}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {index + 1}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono">
+                      {user.rollNumber || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      {user.username || user.name || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <StatusBadge status={student.status} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {student.appliedAt
                         ? new Date(student.appliedAt).toLocaleString()
                         : 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold">
+                      {user.isMember ? (
+                        <FaCheckCircle className="text-green-500 inline-block" title="Member" />
+                      ) : (
+                        <FaTimesCircle className="text-red-500 inline-block" title="Not a Member" />
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                      <button
+                        onClick={() => handleStatusChange(user._id, 'Accepted')}
+                        disabled={student.status === 'Accepted'}
+                        className={`inline-flex items-center px-4 py-2 text-white rounded-md shadow-md transition ${
+                          student.status === 'Accepted'
+                            ? 'bg-green-300 cursor-not-allowed'
+                            : 'bg-green-600 hover:bg-green-700'
+                        }`}
+                        title="Accept Student"
+                      >
+                        <FaCheckCircle className="mr-2" /> Accept
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange(user._id, 'Rejected')}
+                        disabled={student.status === 'Rejected'}
+                        className={`inline-flex items-center px-4 py-2 text-white rounded-md shadow-md transition ${
+                          student.status === 'Rejected'
+                            ? 'bg-red-300 cursor-not-allowed'
+                            : 'bg-red-600 hover:bg-red-700'
+                        }`}
+                        title="Reject Student"
+                      >
+                        <FaTimesCircle className="mr-2" /> Reject
+                      </button>
                     </td>
                   </tr>
                 );
@@ -170,53 +201,81 @@ export default function AdminAppliedStudents() {
           </table>
         </div>
       )}
+
+      {acceptedStudents.length > 0 && (
+        <section className="mt-12">
+          <h3 className="text-3xl font-bold mb-6 text-gray-900 flex items-center gap-3 select-none">
+            🎉 Selected (Accepted) Students List
+          </h3>
+          <div className="overflow-x-auto rounded-lg shadow-md">
+            <table className="min-w-full divide-y divide-gray-200 text-left">
+              <thead className="bg-green-700 text-white">
+                <tr>
+                  <th className="px-6 py-3 text-sm font-medium">S.No</th>
+                  <th className="px-6 py-3 text-sm font-medium flex items-center gap-2">
+                    <FaUserGraduate /> Roll No
+                  </th>
+                  <th className="px-6 py-3 text-sm font-medium">Name</th>
+                  <th className="px-6 py-3 text-sm font-medium flex items-center gap-2">
+                    <FaCalendarAlt /> Applied At
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {acceptedStudents.map((student, index) => {
+                  const user = student.user;
+                  if (!user) return null;
+
+                  return (
+                    <tr
+                      key={student._id}
+                      className={index % 2 === 0 ? 'bg-gray-50' : ''}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono">
+                        {user.rollNumber || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                        {user.username || user.name || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {student.appliedAt
+                          ? new Date(student.appliedAt).toLocaleString()
+                          : 'N/A'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
 
-// ✅ Helpers
-const statusColor = (status) => {
-  if (status === 'Accepted') return 'green';
-  if (status === 'Rejected') return 'red';
-  return '#555';
-};
-
-// ✅ Styles
-const tableStyle = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  marginTop: '20px',
-  boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-};
-
-const theadStyle = {
-  backgroundColor: '#333',
-  color: '#fff',
-};
-
-const thStyle = {
-  padding: '10px',
-  textAlign: 'left',
-};
-
-const tdStyle = {
-  padding: '10px',
-  borderBottom: '1px solid #ddd',
-};
-
-const rowStyleEven = {
-  backgroundColor: '#f9f9f9',
-};
-
-const rowStyleOdd = {
-  backgroundColor: '#ffffff',
-};
-
-const btnStyle = {
-  marginRight: '8px',
-  padding: '6px 12px',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-};
+function StatusBadge({ status }) {
+  switch (status) {
+    case 'Accepted':
+      return (
+        <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 font-semibold text-sm shadow">
+          <FaCheckCircle className="mr-1" /> Accepted
+        </span>
+      );
+    case 'Rejected':
+      return (
+        <span className="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-800 font-semibold text-sm shadow">
+          <FaTimesCircle className="mr-1" /> Rejected
+        </span>
+      );
+    default:
+      return (
+        <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-200 text-gray-700 font-semibold text-sm shadow">
+          <FaClock className="mr-1" /> Pending
+        </span>
+      );
+  }
+}

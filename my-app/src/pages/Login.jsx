@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import './css/Login.css';
+import '../pages/css/login.css';
 
 export default function Login() {
   const location = useLocation();
@@ -204,7 +204,7 @@ export default function Login() {
     <div className="login-container">
       {formType === 'login' ? (
         <form className="form-box" onSubmit={handleLogin}>
-          <h2>{role ? `${role.toUpperCase().replace('-', ' ')} Login` : 'Login'}</h2>
+          <h2>{role ? `${role.toUpperCase().replace('-', ' ')} LOGIN` : 'Login'}</h2>
           <input
             type={isStudent ? 'text' : 'email'}
             name="identifier"
